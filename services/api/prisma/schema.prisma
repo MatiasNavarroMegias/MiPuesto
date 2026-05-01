@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  STAFF
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELED
+}
+
+enum SaleStatus {
+  OPEN
+  PAID
+  CANCELED
+}
+
+enum PurchaseStatus {
+  OPEN
+  RECEIVED
+  CANCELED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUST
+}
+
+model Organization {
+  id                 String               @id @default(cuid())
+  name               String
+  slug               String?              @unique
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  users              User[]
+  products           Product[]
+  sales              Sale[]
+  purchases          Purchase[]
+  inventoryMovements InventoryMovement[]
+  tickets            Ticket[]
+  subscriptions      UserSubscription[]
+}
+
+model User {
+  id               String              @id @default(cuid())
+  organizationId   String
+  fullName         String
+  email            String              @unique
+  passwordHash     String
+  role             Role                @default(OWNER)
+  isActive         Boolean             @default(true)
+  refreshTokenHash String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+  sales            Sale[]
+  purchases        Purchase[]
+  tickets          Ticket[]
+  inventoryMoves   InventoryMovement[]
+  subscriptions    UserSubscription[]
+}
+
+model SubscriptionPlan {
+  id          String             @id @default(cuid())
+  code        String             @unique
+  name        String
+  description String?
+  priceMonthly Float             @default(0)
+  maxUsers    Int?
+  maxProducts Int?
+  maxStores   Int?
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  subscriptions UserSubscription[]
+}
+
+model UserSubscription {
+  id             String              @id @default(cuid())
+  organizationId String
+  userId         String
+  planId         String
+  status         SubscriptionStatus  @default(ACTIVE)
+  startDate      DateTime            @default(now())
+  endDate        DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  user           User                @relation(fields: [userId], references: [id])
+  plan           SubscriptionPlan    @relation(fields: [planId], references: [id])
+}
+
+model Product {
+  id             String               @id @default(cuid())
+  organizationId String
+  sku            String?
+  name           String
+  description    String?
+  unit           String?
+  cost           Float                @default(0)
+  price          Float                @default(0)
+  stock          Float                @default(0)
+  minStock       Float                @default(0)
+  isActive       Boolean              @default(true)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  organization   Organization         @relation(fields: [organizationId], references: [id])
+  saleItems      SaleItem[]
+  purchaseItems  PurchaseItem[]
+  inventoryMoves InventoryMovement[]
+
+  @@unique([organizationId, sku])
+}
+
+model Sale {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String
+  subtotal       Float        @default(0)
+  tax            Float        @default(0)
+  discount       Float        @default(0)
+  total          Float        @default(0)
+  status         SaleStatus   @default(OPEN)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+  items          SaleItem[]
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  productId String
+  quantity  Float
+  price     Float
+  total     Float
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Purchase {
+  id             String         @id @default(cuid())
+  organizationId String
+  userId         String?
+  supplierName   String?
+  subtotal       Float          @default(0)
+  tax            Float          @default(0)
+  discount       Float          @default(0)
+  total          Float          @default(0)
+  status         PurchaseStatus @default(OPEN)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  user           User?          @relation(fields: [userId], references: [id])
+  items          PurchaseItem[]
+}
+
+model PurchaseItem {
+  id         String   @id @default(cuid())
+  purchaseId String
+  productId  String
+  quantity   Float
+  cost       Float
+  total      Float
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model InventoryMovement {
+  id             String       @id @default(cuid())
+  organizationId String
+  productId      String
+  type           MovementType
+  quantity       Float
+  reason         String?
+  referenceId    String?
+  createdAt      DateTime     @default(now())
+  createdById    String?
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  product        Product      @relation(fields: [productId], references: [id])
+  createdBy      User?        @relation(fields: [createdById], references: [id])
+}
+
+model Ticket {
+  id             String         @id @default(cuid())
+  organizationId String
+  userId         String
+  subject        String
+  message        String
+  status         TicketStatus   @default(OPEN)
+  priority       TicketPriority @default(MEDIUM)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+}
