@@ -3,14 +3,14 @@ import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-val
 export class CreateMovementDto {
   @IsNotEmpty()
   @IsString()
-  productId: string;
+  productId!: string;
 
   @IsIn(['IN', 'OUT', 'ADJUST'])
-  type: 'IN' | 'OUT' | 'ADJUST';
+  type!: 'IN' | 'OUT' | 'ADJUST';
 
   @IsNumber()
   @Min(0)
-  quantity: number;
+  quantity!: number;
 
   @IsOptional()
   @IsString()

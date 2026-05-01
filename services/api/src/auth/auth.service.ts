@@ -139,7 +139,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  private sanitizeUser(user: { passwordHash?: string; refreshTokenHash?: string; [key: string]: unknown }) {
+  private sanitizeUser(user: { passwordHash?: string; refreshTokenHash?: string | null; [key: string]: unknown }) {
     const { passwordHash, refreshTokenHash, ...safe } = user;
     return safe;
   }

@@ -12,11 +12,11 @@ import {
 
 class PurchaseItemDto {
   @IsNotEmpty()
-  productId: string;
+  productId!: string;
 
   @IsNumber()
   @Min(0)
-  quantity: number;
+  quantity!: number;
 
   @IsOptional()
   @IsNumber()
@@ -29,7 +29,7 @@ export class CreatePurchaseDto {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => PurchaseItemDto)
-  items: PurchaseItemDto[];
+  items!: PurchaseItemDto[];
 
   @IsOptional()
   @IsString()

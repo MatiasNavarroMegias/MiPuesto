@@ -11,11 +11,11 @@ import {
 
 class SaleItemDto {
   @IsNotEmpty()
-  productId: string;
+  productId!: string;
 
   @IsNumber()
   @Min(0)
-  quantity: number;
+  quantity!: number;
 
   @IsOptional()
   @IsNumber()
@@ -28,7 +28,7 @@ export class CreateSaleDto {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => SaleItemDto)
-  items: SaleItemDto[];
+  items!: SaleItemDto[];
 
   @IsOptional()
   @IsNumber()

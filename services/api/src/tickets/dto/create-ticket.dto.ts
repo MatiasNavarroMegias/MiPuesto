@@ -4,11 +4,11 @@ import { TicketPriority } from '@prisma/client';
 export class CreateTicketDto {
   @IsNotEmpty()
   @IsString()
-  subject: string;
+  subject!: string;
 
   @IsNotEmpty()
   @IsString()
-  message: string;
+  message!: string;
 
   @IsOptional()
   @IsEnum(TicketPriority)
